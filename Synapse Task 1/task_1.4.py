@@ -1,51 +1,54 @@
 import random
 
 class ChessPlayer:
-  def members(self,name,age,elo,rating,tenacity,isBoring):
-    self.name=name
-    self.age=age
-    self.elo=elo
-    self.rating=rating
-    self.tenacity=tenacity
-    self.isBoring=isBoring
+    def __init__(self, name, age, elo, tenacity, isBoring):
+        self.name = name
+        self.age = age
+        self.elo = elo
+        self.tenacity = tenacity
+        self.isBoring = isBoring
 
-    tournament_score=0
-    
-def simulateMatch(player1,player2):
-  elo_diff=player1.elo-player2.elo
+        self.tournament_score = 0  # Initialize tournament score
 
-  if elo_diff>100:
-    winner=player1 if player1>player2 else player2
+def simulateMatch(player1, player2):
+    elo_diff = player1.elo - player2.elo
+    winner = None  # Initialize winner as None
 
-  if player1.isBoring or player2.isBoring:
-    if elo_diff<100:
-      winner=None
+    if elo_diff > 100:
+        winner = player1 if player1.elo > player2.elo else player2
+    elif player1.isBoring or player2.isBoring:
+        if elo_diff <= 100:
+            return None, None  # Match ends in a draw if one player is boring
+    else:
+        random_factor = random.randint(1, 10)
+        lower_elo_player_factor = random_factor * player1.tenacity if player1.elo < player2.elo else player2.tenacity
+        if lower_elo_player_factor > max(player1.elo, player2.elo):
+            winner = player1 if player1.elo < player2.elo else player2
 
-  if winner==player1:
-    player1.tournament_score+=1
+    if winner == player1:
+        return player1, player2
+    elif winner == player2:
+        return player2, player1
+    else:
+        return None, None  # Match ends in a draw
 
-  elif winner==player2:
-    player2.tournament_score+=1
-
-  else:
-    player1.tournament_score+=0.5
-    player2.tournament_score=+0.5
-
-  
-  
-players=[
+players = [
     ChessPlayer("Courage the Cowardly Dog", 25, 1000.39, 1000, False),
     ChessPlayer("Princess Peach", 23, 945.65, 50, True),
     ChessPlayer("Walter White", 50, 1650.73, 750, False),
     ChessPlayer("Rory Gilmore", 16, 1700.87, 500, False),
     ChessPlayer("Anthony Fantano", 37, 1400.45, 400, True),
     ChessPlayer("Beth Harmon", 20, 2500.34, 150, False)
- ]
- 
+]
+
+# Simulate matches
 for i in range(len(players)):
     for j in range(i + 1, len(players)):
-        simulateMatch(players[i], players[j])
-        simulateMatch(players[j], players[i])
+        result1, result2 = simulateMatch(players[i], players[j])
+        if result1 is not None:
+            result1.tournament_score += 1
+        if result2 is not None:
+            result2.tournament_score += 1
 
 # Sort players based on tournament score
 players.sort(key=lambda player: player.tournament_score, reverse=True)
